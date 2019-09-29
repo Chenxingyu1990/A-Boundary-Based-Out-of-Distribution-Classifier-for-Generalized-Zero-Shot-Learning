@@ -72,7 +72,7 @@ class Imagenet(object):
     def norm_data(self):
         for i in range(self.attrs.shape[0]):
             print('{} {}'.format(i,np.linalg.norm(self.attrs[i,:])))
-            self.attrs[i,:] = self.attrs[i,:]/np.linalg.norm(self.attrs[i,:])* 10.0
+            self.attrs[i,:] = self.attrs[i,:]/np.linalg.norm(self.attrs[i,:])* 1.0
         print('norm attributes done!')
     
         for i in range(self.visual_features.shape[0]):
@@ -144,7 +144,7 @@ class AwA2(object):
     
     def norm_data(self):
         for i in range(self.visual_features.shape[0]):
-            self.visual_features[i,:] = self.visual_features[i,:]/np.linalg.norm(self.visual_features[i,:]) * 10.0
+            self.visual_features[i,:] = self.visual_features[i,:]/np.linalg.norm(self.visual_features[i,:]) * 1.0
         print('norm features done!')
         
     def prepare_data(self):
@@ -156,7 +156,7 @@ class AwA2(object):
         attr = scipy.io.loadmat(attr_path)
         self.visual_features = features['features'].T
         self.visual_labels = features['labels']
-        self.attrs = attr['att'].T 
+        self.attrs = attr['att'].T * 1.0
         self.train_loc = attr['train_loc']
         self.val_loc = attr['val_loc'] 
         self.trainval_loc = attr['trainval_loc']

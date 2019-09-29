@@ -17,6 +17,8 @@ from sklearn.metrics import pairwise_distances
 from hyperspherical_vae.distributions import VonMisesFisher
 from hyperspherical_vae.distributions import HypersphericalUniform
 #from wae_models import classifier
+from math import factorial
+from utilis_svae import emd
 
 def norm_data(visual_features):
     for i in range(visual_features.shape[0]):
@@ -67,7 +69,8 @@ class Model_train(object):
         self.ifsample = ifsample
         self.data = data
         self.GZSL = GZSL
-
+        self.distribution = 'vmf'
+        self.sinkhorn = emd.SinkhornDistance(eps=0.1, max_iter=100, reduction=None)
         
         if iftest:
             log_dir = '{}/log'.format(self.save_path)
@@ -80,14 +83,43 @@ class Model_train(object):
     def reparameterize(self, z_mean, z_var):
         if self.distribution == 'normal':
             q_z = torch.distributions.normal.Normal(z_mean, z_var)
-            p_z = torch.distributions.normal.Normal(torch.zeros_like(z_mean), torch.ones_like(z_var))
         elif self.distribution == 'vmf':
             q_z = VonMisesFisher(z_mean, z_var)
-            p_z = HypersphericalUniform(self.z_dim - 1)
         else:
             raise NotImplemented
 
-        return q_z, p_z
+        return q_z
+        
+    def KL_divergence(self, u_q, k_q, u_p, k_p):
+    
+        def calculate_term2(k_q, d):
+            res = k_q.clone()
+            k_q_tmp = k_q.clone()
+            for i in range(1,int(d)):
+                m = i + 1
+                xx = k_q_tmp.pow(m)
+                res_m =  xx / factorial(m)   
+                res += res_m
+                if res_m.mean() < 1e-8 or res_m.mean() > 1e8:
+                    return res.log()
+            return res.log()
+                 
+        u_q = u_q.t()
+        k_q = k_q.t()
+        u_p = u_p.squeeze().t()
+        k_p = k_p.squeeze().t().view(1, -1)
+        
+        d = u_p.shape[0]
+        d1 = (d -1)/2
+        d2 = (d -3)/2
+
+        term_1 = k_q - torch.mm(torch.mm(k_p, u_p.t()), u_q) + d1 * k_q.log() - d1 * k_p.log()
+        term_2 = calculate_term2(k_q, 5)
+        term_3 = calculate_term2(k_p, 5)           
+        kl_divergence = term_1 - term_2 + term_3
+
+        #print("term1 {} term2 {} term3 {} k_p {} k_q {}".format(term_1.mean(), term_2.mean(), term_3.mean(), k_p.mean(), k_q.mean()))
+        return kl_divergence.mean().abs()
         
     def training(self, checkpoint = -1):
         log_dir = '{}/log'.format(self.save_path)
@@ -154,21 +186,45 @@ class Model_train(object):
                 self.encoder.zero_grad()
                 self.decoder.zero_grad()
                 self.attr_encoder.zero_grad()
-                ipdb.set_trace()
-                if self.ifsample:
-                    m, s = self.encoder(input_data)
-                    z = self.reparametrize(m, s)
-                else:
-                    z = self.encoder(input_data)
+                
+                m1, s1 = self.encoder(input_data)
+                z1 = self.reparameterize(m1, s1)
+                m2, s2 = self.attr_encoder(input_attr)
+                z2 = self.reparameterize(m2, s2)
+                
+                z_x = z1.rsample()
+                z_attr = z2.rsample()
+                
+                x_recon = self.decoder(z_x)
+                recon_loss = self.criterion(x_recon, input_data)
+                
+                if torch.cuda.is_available():
+                    z_attr = z_attr.cuda()
+                
+                attr_fake = self.attr_decoder(z_attr)
+                attr_loss = self.criterion(attr_fake, input_attr)
+           
+                #KL_loss = self.KL_divergence(m1, s1, m2, s2)
+                
+                #KL_loss = torch.distributions.kl.kl_divergence(z1, z2).mean()
+               
+                dist, P, C = self.sinkhorn(z_x.view(-1,1,64), z_attr)
+   
+                #print(KL_loss)
+                KL_loss = dist.mean()
+                total_loss =  recon_loss *1.0 + KL_loss * 0.01  + attr_loss *1.0 
+                
+                total_loss.backward()
             
+                enc_optim.step()
+                dec_optim.step()
+                attr_enc_optim.step()
+                attr_dec_optim.step()
+                step += 1
             
-            
-            
-            
-            
-            
-            
-            
+                if (step + 1) % 50 == 0:
+                    logging.info("Epoch: [%d/%d], Step: [%d/%d], Reconstruction Loss: %.4f KL_Loss: %.4f, attr_Recon Loss: %.4f k1: %.4f, k2: %.4f, u: %.4f" %
+                          (epoch, self.epoch, step , len(self.train_loader), recon_loss.data.item(), KL_loss.data.item(), attr_loss.data.item(), s1.mean().data.item(), s2.mean().data.item(), torch.dot(z_x[1,:], z_attr.squeeze()[1,:]).data.item()))
             
             
             

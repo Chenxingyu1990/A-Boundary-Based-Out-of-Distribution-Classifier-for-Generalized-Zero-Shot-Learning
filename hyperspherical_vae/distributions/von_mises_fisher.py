@@ -129,3 +129,7 @@ class VonMisesFisher(torch.distributions.Distribution):
 @register_kl(VonMisesFisher, HypersphericalUniform)
 def _kl_vmf_uniform(vmf, hyu):
     return - vmf.entropy() + hyu.entropy()
+    
+@register_kl(VonMisesFisher, VonMisesFisher)
+def _kl_vmf_vmf(vmf1, vmf2):
+    return -vmf1.entropy() + vmf2.entropy()

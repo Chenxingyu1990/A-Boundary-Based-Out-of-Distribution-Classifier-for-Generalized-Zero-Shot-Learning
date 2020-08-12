@@ -24,7 +24,7 @@ class SinkhornDistance(nn.Module):
         self.eps = eps
         self.max_iter = max_iter
         self.reduction = reduction
-
+   
     def forward(self, x, y):
         # The Sinkhorn algorithm takes as input three variables :
         C = self._cost_matrix(x, y)  # Wasserstein cost function

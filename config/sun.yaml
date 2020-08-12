@@ -1,0 +1,24 @@
+dataset:
+    dataset_name: SUN
+    GZSL: True
+    n_neighbors: 2
+    data_path: /data/xingyu/Wasserstein_Autoencoders/data/SUN
+    save_path: /data/xingyu/gzsl_svae/experiments/SUN_cls1.0
+    
+model:
+    ifsample: False
+    attr_size: 102
+    input_size: 2048
+    mid_size: 512
+    hidden_size: 64
+    classes: 717
+train:
+    start_epoch_classifier: 5
+    classifier_epoch: 200
+    generate_n_samples: 20
+    learning_rate: 1e-3
+    batch_size: 128
+    check_point: 50
+    epoch: 2000
+    interval: 100
+    save_every: 50

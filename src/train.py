@@ -39,59 +39,57 @@ if __name__ == "__main__":
     
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
-        
-    if dataset_config['dataset_name']  == 'Imagenet':
+    '''    
+    basis_dir = '{}/basis'.format(train_config['res_dir'])
+    if not os.path.exists(basis_dir):
+        os.mkdir(basis_dir)
+    '''
+   
+    if dataset_config['dataset_name'] == 'ImageNet':
         data = datasets.Imagenet(dataset_config['dataset_name'],
                             dataset_config['data_path'],
                             iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])
-                            
-        dataset_setup_train = datasets.Dataset_setup_batch(
-                            data = data.train_set,
-                            attrs = data.attrs ,
-                            labels = data.train_labels 
-                            )
-        dataset_loader_train = torch.utils.data.DataLoader(dataset_setup_train, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
-        dataset_loader_test_seen = None
-        dataset_loader_test_unseen = None
-    
-    elif dataset_config['dataset_name']  == 'AwA2':
+                            n_neighbors = dataset_config['n_neighbors'])  
+    else:
+     
         data = datasets.AwA2(dataset_config['dataset_name'],
                             dataset_config['data_path'],
                             iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])
-        
-                           
-        dataset_setup_train = datasets.Dataset_setup(
+                            n_neighbors = dataset_config['n_neighbors'])                      
+    
+    
+    dataset_setup_train = datasets.Dataset_setup(
                             data = data.train_set,
                             attrs = data.attrs ,
                             labels = data.train_labels 
                             )
         
-        dataset_setup_val = datasets.Dataset_setup(
+    dataset_setup_val = datasets.Dataset_setup(
                             data = data.val_set,
                             attrs = data.attrs ,
                             labels = data.val_labels 
                             )
-        dataset_setup_test_seen = datasets.Dataset_setup(
+    dataset_setup_test_seen = datasets.Dataset_setup(
                             data = data.test_seen_set,
                             attrs = data.attrs ,
                             labels = data.test_seen_labels 
                             )
        
-        dataset_setup_test_unseen = datasets.Dataset_setup(
+    dataset_setup_test_unseen = datasets.Dataset_setup(
                             data = data.test_unseen_set,
                             attrs = data.attrs ,
                             labels = data.test_unseen_labels 
                             )
 
-        dataset_loader_train = torch.utils.data.DataLoader(dataset_setup_train, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
-        dataset_loader_val = torch.utils.data.DataLoader(dataset_setup_val, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
-        dataset_loader_test_seen = torch.utils.data.DataLoader(dataset_setup_test_seen, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
-        dataset_loader_test_unseen = torch.utils.data.DataLoader(dataset_setup_test_unseen, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
+  
     
-    else:
-        raise NotImplemented
+    
+    
+    dataset_loader_train = torch.utils.data.DataLoader(dataset_setup_train, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
+    dataset_loader_val = torch.utils.data.DataLoader(dataset_setup_val, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
+    dataset_loader_test_seen = torch.utils.data.DataLoader(dataset_setup_test_seen, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
+    dataset_loader_test_unseen = torch.utils.data.DataLoader(dataset_setup_test_unseen, batch_size = train_config['batch_size'], shuffle= True, num_workers = 4)
+    
     
     
     from svae_models import models
@@ -103,10 +101,9 @@ if __name__ == "__main__":
     else:
         encoder = models.Encoder(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
     
-    if dataset_config['dataset_name']  == 'AwA2':
-        decoder = models.Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['input_size'])
-    elif dataset_config['dataset_name']  == 'Imagenet':
-        decoder = models.Decoder_Imagenet(model_config['hidden_size'], model_config['mid_size'], model_config['input_size'])
+    
+    decoder = models.Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['input_size'])
+
         
     from svae_models import model_train
     
@@ -122,6 +119,7 @@ if __name__ == "__main__":
 
    
     model_train_obj = model_train.Model_train(
+                                  dataset_config['dataset_name'],
                                   encoder,
                                   decoder,
                                   attr_encoder,
@@ -130,7 +128,7 @@ if __name__ == "__main__":
                                   dataset_loader_train,
                                   dataset_loader_test_unseen,
                                   dataset_loader_test_seen,
-                                  criterion = nn.MSELoss(),
+                                  criterion = nn.L1Loss(),
                                   SIGMA = 0.5,
                                   lr = 1e-4,
                                   all_attrs = data.attrs,
@@ -142,6 +140,8 @@ if __name__ == "__main__":
                                   GZSL = dataset_config['GZSL']
                                   )
                                   
-
-    model_train_obj.training()
-    
+    model_train_obj.training(train_config['check_point'])
+    '''
+    for i in range(train_config['start_epoch_classifier'],train_config['epoch'],5):
+        model_train_obj.training_classifier(epoch = i, classifier_epoch = train_config['classifier_epoch'], n = train_config['generate_n_samples'])
+    '''

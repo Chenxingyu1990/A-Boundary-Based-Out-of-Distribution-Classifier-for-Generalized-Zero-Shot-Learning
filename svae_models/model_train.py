@@ -18,7 +18,7 @@ from hyperspherical_vae.distributions import HypersphericalUniform
 from math import factorial
 from utilis_svae import emd
 from svae_models import classifier
-from svae_models import basis_learning
+#from svae_models import basis_learning
 import torch.nn.functional as F
 import scipy.io
 import pickle
@@ -330,7 +330,7 @@ class Model_train(object):
         classifier_checkpoint = torch.load(classifier_path)
         self.classifier.load_state_dict(classifier_checkpoint['state_dict'])       
         
-        # Load the ZSL classifiers.  
+        # Load the ZSL classifiers. These ZSL classifiers can be replaced by any SOTA models! 
         if self.dataset_name == 'AWA1':
             zsl_classifier_checkpoint = torch.load("/home/svc6/origin/cvpr18xian/checkpoint/awa1/Checkpoint_24_Classifier.pth.tar")
         elif self.dataset_name == 'AWA2':
@@ -350,7 +350,7 @@ class Model_train(object):
         self.zsl_classifier.eval()      
         if torch.cuda.is_available():
              self.encoder, self.decoder, self.attr_encoder, self.zsl_classifier, self.classifier = self.encoder.cuda(), self.decoder.cuda(), self.attr_encoder.cuda(), self.zsl_classifier.cuda(), self.classifier.cuda()
-        
+    '''    
     def search_thres_by_bases(self, epoch, basis_config, basis_dir,dataset = None, n = 2000):
         all_attrs = torch.Tensor(dataset.attrs).float().cuda()
         seen_labels = dataset.seen_labels
@@ -419,7 +419,7 @@ class Model_train(object):
             print('save bases at {}'.format(basis_dir))
 
         return thres
-        
+    '''    
     
     def search_thres_by_traindata(self, epoch, dataset = None, n = 0.95):
         all_attrs = torch.Tensor(dataset.attrs).float().cuda()

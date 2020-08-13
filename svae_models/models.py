@@ -28,7 +28,7 @@ class Attr_Encoder(nn.Module):
         x2 = self.fc2(x)
         x2 = x2 / x2.norm(dim=-1, keepdim=True)
         x3 = self.fc3(x) 
-        x3 = F.softplus(x3) + 100.0
+        x3 = F.softplus(x3) + 100.0 # A trick for accelerating training. Not necessary.
         return x2, x3
         
 class Attr_Decoder(nn.Module):
@@ -42,10 +42,7 @@ class Attr_Decoder(nn.Module):
     def forward(self, x):
         x = self.fc1(x)
         x = self.relu(x)
-        x = self.fc2(x)
-        
-        
-      
+        x = self.fc2(x)      
         return x
 
 class Encoder(nn.Module):

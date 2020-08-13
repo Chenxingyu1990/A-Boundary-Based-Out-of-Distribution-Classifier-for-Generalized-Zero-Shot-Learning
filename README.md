@@ -2,7 +2,7 @@
 ### A Pytorch implementation 
 
 ## Overview
-This library contains a Pytorch implementation of 'A Boundary Based Out-of-Distribution Classifier for Generalized Zero-Shot Learning' [1] (#citation)(https://arxiv.org/abs/2008.04872). This work is build on top of S-VAE, as presented in [[2]](#citation)(http://arxiv.org/abs/1804.00891). 
+This library contains a Pytorch implementation of 'A Boundary Based Out-of-Distribution Classifier for Generalized Zero-Shot Learning' [1] (#citation)(https://arxiv.org/abs/2008.04872). This work is built on top of S-VAE, as presented in [[2]](#citation)(http://arxiv.org/abs/1804.00891). 
 
 
 ## Dependencies

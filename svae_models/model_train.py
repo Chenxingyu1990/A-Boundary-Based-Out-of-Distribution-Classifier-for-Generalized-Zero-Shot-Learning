@@ -41,7 +41,6 @@ class Model_train(object):
                  test_loader_unseen,
                  test_loader_seen,
                  criterion,
-                 SIGMA = 2,
                  lr = 1e-3,
                  all_attrs = None,
                  epoch = 10000,

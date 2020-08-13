@@ -1,9 +1,8 @@
 dataset:
     dataset_name: AWA1
     GZSL: True
-    n_neighbors: 20
     data_path: /data/xingyu/Wasserstein_Autoencoders/data/AWA1
-    save_path: /data/xingyu/gzsl_svae/experiments/AWA1_rebuttal
+    save_path: /data/xingyu/gzsl_svae/experiments/AWA1_cls1.0
     
 model:
     ifsample: False
@@ -13,10 +12,7 @@ model:
     hidden_size: 64
     classes: 150
 train:
-    start_epoch_classifier: 0
     epoch: 500
-    generate_n_samples: 50
-    classifier_epoch: 200
     learning_rate: 1e-4
     batch_size: 128
     check_point: 0
@@ -24,16 +20,3 @@ train:
     save_every: 10
     
     
-basis:
-    method: optimized  # method to use, could be one of ['optimized', 'origin', 'sparse_coding', 'archetypal']
-    init_method: naive  # how to initialize basis, ['naive', 'kmeans']
-    basis_num: 64 # number of basis
-    random_seed: 1234 
-    method_params:  # method-dependent parameters
-        t0: 1.0e-5
-        epoch: 3  # [optional] if specified, n_iter should be None
-        n_iter: ~
-        n_inner_iter: 1
-        batch_size: 64
-        verbose_interval: 10
-        max_num_recon: 10000  

@@ -59,14 +59,10 @@ class Imagenet(object):
     def __init__(self,
                 dataset_name,
                 data_path,
-                ifnorm = True,
-                iftrain = False,
-                n_neighbors = 20):
+                ifnorm = True):
         self.dataset_name = dataset_name
         self.data_path = data_path
         self.ifnorm = ifnorm
-        self.iftrain = iftrain
-        self.n_neighbors = n_neighbors
         self.prepare_data()
         
     def norm_data(self):
@@ -139,15 +135,11 @@ class AwA2(object):
     def __init__(self,
                  dataset_name,
                  data_path,
-                 ifnorm = True,
-                 iftrain = False,
-                 n_neighbors = 5):
+                 ifnorm = True):
                  
         self.dataset_name = dataset_name
         self.data_path = data_path
         self.ifnorm = ifnorm
-        self.iftrain = iftrain
-        self.n_neighbors = n_neighbors
         self.prepare_data()
     
     def norm_data(self):
@@ -184,31 +176,34 @@ class AwA2(object):
         self.trainval_set =  self.visual_features[self.trainval_loc.reshape(-1)-1,:]
         self.trainval_labels = self.visual_labels[self.trainval_loc.reshape(-1)-1,:]
                
+               
         self.test_seen_set = self.visual_features[self.test_seen_loc.reshape(-1)-1,:]
-        self.test_seen_labels = self.visual_labels[self.test_seen_loc.reshape(-1)-1,:]        
-        self.test_seen_labels2 = np.ones(self.test_seen_labels.shape[0]).reshape(-1,1).astype('int16')
-        
+        self.test_seen_labels = self.visual_labels[self.test_seen_loc.reshape(-1)-1,:]  
         self.test_unseen_set = self.visual_features[self.test_unseen_loc.reshape(-1)-1,:]
         self.test_unseen_labels = self.visual_labels[self.test_unseen_loc.reshape(-1)-1,:]
-        self.test_unseen_labels2 = np.ones(self.test_unseen_labels.shape[0]).reshape(-1,1)*2
-        self.test_unseen_labels2 = self.test_unseen_labels2.astype('int16')
+        
+        
               
-        #self.test_seen_set = self.trainval_set
-        #self.test_seen_labels = self.trainval_labels 
-  
-             
-       
         self.train_set = np.vstack([self.train_set_, self.val_set])
         self.train_labels = np.vstack([self.train_labels_, self.val_labels])
-        
-      
-    
+  
         self.seen_labels = np.unique(self.test_seen_labels).astype('int16')
-        self.unseen_labels = np.unique(self.test_unseen_labels).astype('int16')
-       
-        #self.test_unseen_set = np.vstack([self.test_unseen_set, self.test_seen_set])
-        #self.test_unseen_labels = np.vstack([self.test_unseen_labels2, self.test_seen_labels2])
-    
+        self.unseen_labels = np.unique(self.test_unseen_labels).astype('int16')     
+        
+        
+        
+        #self.test_seen_set = self.trainval_set
+        #self.test_seen_labels = self.trainval_labels 
+        '''
+        # binary labels for visualization     
+      
+        self.test_seen_labels2 = np.ones(self.test_seen_labels.shape[0]).reshape(-1,1).astype('int16')
+        self.test_unseen_labels2 = np.ones(self.test_unseen_labels.shape[0]).reshape(-1,1)*2
+        self.test_unseen_labels2 = self.test_unseen_labels2.astype('int16')
+        
+        self.test_unseen_set = np.vstack([self.test_unseen_set, self.test_seen_set])
+        self.test_unseen_labels = np.vstack([self.test_unseen_labels2, self.test_seen_labels2])
+        '''
  
 
         

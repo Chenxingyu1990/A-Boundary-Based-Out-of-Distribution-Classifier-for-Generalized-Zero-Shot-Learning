@@ -1,9 +1,8 @@
 dataset:
     dataset_name: CUB
     GZSL: True
-    n_neighbors: 20
     data_path: /data/xingyu/Wasserstein_Autoencoders/data/CUB
-    save_path: /data/xingyu/gzsl_svae/experiments/CUB_rebuttal
+    save_path: /data/xingyu/gzsl_svae/experiments/CUB_cls1.0
     
 model:
     ifsample: False
@@ -14,10 +13,7 @@ model:
     classes: 200
     unseen_classes: 50
 train:
-    start_epoch_classifier: 0
     epoch: 1000
-    generate_n_samples: 50
-    classifier_epoch: 200
     learning_rate: 1e-4
     batch_size: 128
     check_point: 0

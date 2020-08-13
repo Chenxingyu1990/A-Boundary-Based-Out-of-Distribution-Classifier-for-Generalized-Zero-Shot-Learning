@@ -47,15 +47,11 @@ if __name__ == "__main__":
    
     if dataset_config['dataset_name'] == 'ImageNet':
         data = datasets.Imagenet(dataset_config['dataset_name'],
-                            dataset_config['data_path'],
-                            iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])  
+                            dataset_config['data_path'])  
     else:
      
         data = datasets.AwA2(dataset_config['dataset_name'],
-                            dataset_config['data_path'],
-                            iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])                      
+                            dataset_config['data_path'])                      
     
     
     dataset_setup_train = datasets.Dataset_setup(
@@ -96,12 +92,7 @@ if __name__ == "__main__":
         
     attr_encoder = models.Attr_Encoder(model_config['attr_size'], model_config['mid_size'], model_config['hidden_size'])
     attr_decoder = models.Attr_Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['attr_size'])
-    if model_config['ifsample']:
-        encoder = models.Encoder2(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
-    else:
-        encoder = models.Encoder(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
-    
-    
+    encoder = models.Encoder(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
     decoder = models.Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['input_size'])
 
         
@@ -141,7 +132,4 @@ if __name__ == "__main__":
                                   )
                                   
     model_train_obj.training(train_config['check_point'])
-    '''
-    for i in range(train_config['start_epoch_classifier'],train_config['epoch'],5):
-        model_train_obj.training_classifier(epoch = i, classifier_epoch = train_config['classifier_epoch'], n = train_config['generate_n_samples'])
-    '''
+   

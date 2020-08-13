@@ -48,17 +48,13 @@ if __name__ == "__main__":
     '''    
     if dataset_config['dataset_name'] == 'ImageNet':
         data = datasets.Imagenet(dataset_config['dataset_name'],
-                            dataset_config['data_path'],
-                            iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])  
+                            dataset_config['data_path'])  
     else:
      
         data = datasets.AwA2(dataset_config['dataset_name'],
-                            dataset_config['data_path'],
-                            iftrain = True,
-                            n_neighbors = dataset_config['n_neighbors'])
+                            dataset_config['data_path'])
     
-      
+       
                  
     dataset_setup_train = datasets.Dataset_setup(
                             data = data.train_set,
@@ -95,12 +91,8 @@ if __name__ == "__main__":
         
     attr_encoder = models.Attr_Encoder(model_config['attr_size'], model_config['mid_size'], model_config['hidden_size'])
     attr_decoder = models.Attr_Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['attr_size'])
-    if model_config['ifsample']:
-        encoder = models.Encoder2(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
-    else:
-        encoder = models.Encoder(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
-    
    
+    encoder = models.Encoder(model_config['input_size'], model_config['mid_size'], model_config['hidden_size'])
     decoder = models.Decoder(model_config['hidden_size'], model_config['mid_size'], model_config['input_size'])
 
         
@@ -143,20 +135,20 @@ if __name__ == "__main__":
                                   zsl_classifier = zsl_classifier
                                   )
     '''
-    threshold       AWA1      AWA2        CUB       SUN      FLO
-    best_epoch      435/320   275/520   650/300   1800/350   560
-    best_val_epoch  245        -       545    1865  - 
+    Dataset         AWA1      AWA2        CUB       SUN      FLO
+    best_epoch      320       520         300       350      560
     '''
     
-    epoch = 10
-    #model_train_obj.testing(epoch, sample_rate = 2)
-    model_train_obj.draw_roc_curve(epoch, data)
+    epoch = 350
+    #latent space visualization
+    #model_train_obj.testing(epoch, sample_rate = 5)
+    
+    #model_train_obj.draw_roc_curve(epoch, data)
     
     
     for i in range(epoch,2000,10):
         test_epoch = i
         threshold = model_train_obj.search_thres_by_traindata(test_epoch, dataset = data, n = 0.95)
-        #threshold = model_train_obj.search_thres_by_bases(test_epoch, basis_config = basis_config, basis_dir = basis_dir,dataset = data, n = model_config['mid_size'])
         unseen_acc, _, ts, _ = model_train_obj.testing_2(test_epoch, test_class ='unseen', dataset = data, threshold = threshold)
         _, seen_acc,  tr, _ = model_train_obj.testing_2(test_epoch, test_class ='seen', dataset = data, threshold = threshold)
         print("epoch {}, unseen {}, seen {}, ts {}  tr {}, H {}".format(i, unseen_acc, seen_acc, ts, tr, 2*ts*tr/(ts + tr)))

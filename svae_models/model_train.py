@@ -122,94 +122,7 @@ class Model_train(object):
         )
         #ipdb.set_trace()
         return np.mean(cb_accs)   
-  
-    def testing_acc(self, data_loader,epoch, classifier_epoch):
-        '''
-        if GZSL:
-            attr_center = torch.Tensor(self.all_attrs).float().cuda()
-        else:
-            attr_center = torch.Tensor(self.all_attrs[self.unseen_labels, :]).float().cuda()
-        '''    
-        self.classifier_dir = os.path.join(self.save_path, 'classifier_{}'.format(epoch)) 
-    
-        file_encoder = 'Checkpoint_{}_Enc.pth.tar'.format(epoch)
-        file_decoder = 'Checkpoint_{}_Dec.pth.tar'.format(epoch)
-        file_attr_encoder = 'Checkpoint_{}_attr_Enc.pth.tar'.format(epoch)
-        file_classifier = 'Checkpoint_{}_classifier.pth.tar'.format(classifier_epoch)
-    
-        enc_path = os.path.join(self.save_path, file_encoder)
-        dec_path = os.path.join(self.save_path, file_decoder)
-        attr_enc_path = os.path.join(self.save_path, file_attr_encoder)
-        classifier_path = os.path.join(self.classifier_dir, file_classifier)
-        enc_checkpoint = torch.load(enc_path)
-        self.encoder.load_state_dict(enc_checkpoint['state_dict'])
-        
-        dec_checkpoint = torch.load(dec_path)
-        self.decoder.load_state_dict(dec_checkpoint['state_dict'])
-        
-        attr_enc_checkpoint = torch.load(attr_enc_path)
-        self.attr_encoder.load_state_dict(attr_enc_checkpoint['state_dict'])
-        
-        classifier_checkpoint = torch.load(classifier_path)
-        self.classifier.load_state_dict(classifier_checkpoint['state_dict'])
       
-        self.encoder.eval()
-        self.decoder.eval()
-        self.classifier.eval()      
-        if torch.cuda.is_available():
-             self.encoder, self.decoder, self.attr_encoder, self.classifier = self.encoder.cuda(), self.decoder.cuda(), self.attr_encoder.cuda(), self.classifier.cuda()
-             
-        N_all = 0
-        N_correct = 0
-        pred = []
-        gt = []
-        for i_batch, sample_batched in enumerate(data_loader):
-            input_data = sample_batched['feature']
-            input_label = sample_batched['label']   
-            input_attr = sample_batched['attr']
-            batch_size = input_data.size()[0]
-            if torch.cuda.is_available():
-                input_data = input_data.float().cuda()
-                input_label = input_label.cuda()  
-                input_attr = input_attr.float().cuda()
-            if self.ifsample:
-                m, s = self.encoder(input_data)
-                z_real = self.reparametrize(m, s)
-            else:
-                z_real = self.encoder(input_data)[0]
-                        
-            out = self.classifier(z_real)
-      
-            if self.GZSL:
-                pred_label_ = torch.argmax(out,1)
-                pred.append(pred_label_.cpu().data.numpy().reshape(-1,1))
-                pred_label = pred_label_.cpu().data.numpy().reshape(-1)
-            else:
-                pred_label_ = torch.argmax(out,1)
-                pred_label = self.data.unseen_labels[pred_label_.cpu().data.numpy()].reshape(-1)-1
-                pred.append(pred_label.reshape(-1,1))
-
-            gt.append(input_label.cpu().data.numpy().reshape(-1,1))
-            correct = batch_size - np.count_nonzero(pred_label - input_label.cpu().data.numpy().reshape(-1))
-            
-            N_all += batch_size
-            N_correct += correct
-        
-        pred_ = np.vstack(pred)
-        gt_ = np.vstack(gt)
- 
-        acc = self.compute_acc(gt_, pred_ )
-        #print('epoch {}:Correct_samples = {}, all_samples = {}, recognition_acc_1={}, recognition_acc2_ = {}'.format(classifier_epoch, N_correct, N_all,  N_correct/N_all,acc))
-
-        return acc
-        
-    def test_Harmonic_mean(self, epoch, classifier_epoch):
-        unseen_acc = self.testing_acc(self.test_loader_unseen, epoch, classifier_epoch)
-        seen_acc = self.testing_acc(self.test_loader_seen, epoch, classifier_epoch)
-        Harmonic_mean = (2.0 * unseen_acc * seen_acc) / (unseen_acc + seen_acc)
-        print('Generator epoch: {} Classifier epoch: {} unseen_acc = {}, seen_acc = {}, H_mean = {}'.format(epoch, classifier_epoch, unseen_acc, seen_acc, Harmonic_mean))
-    
-       
     def training(self, checkpoint = -1):
         log_dir = '{}/log'.format(self.save_path)
         general.logger_setup(log_dir)
@@ -327,8 +240,8 @@ class Model_train(object):
      
                 dist, P, C = self.sinkhorn(z_x.view(-1,1,z_x.shape[1]), z_attr)
                 KL_loss = dist.mean()
-                #total_loss =  recon_loss *1.0 + KL_loss * 0.1  + cls_loss *1.0 
-                total_loss =  recon_loss *1.0 + KL_loss * 0.1  + attr_loss *1.0 + cls_loss* 1.0  #+ cr_loss * 1.0  
+               
+                total_loss =  recon_loss *1.0 + KL_loss * 0.1  + attr_loss *1.0 + cls_loss* 1.0  
             
                 total_loss.backward()
             
@@ -419,6 +332,7 @@ class Model_train(object):
         classifier_checkpoint = torch.load(classifier_path)
         self.classifier.load_state_dict(classifier_checkpoint['state_dict'])       
         
+        # Load the ZSL classifiers.  
         if self.dataset_name == 'AWA1':
             zsl_classifier_checkpoint = torch.load("/home/svc6/origin/cvpr18xian/checkpoint/awa1/Checkpoint_24_Classifier.pth.tar")
         elif self.dataset_name == 'AWA2':
@@ -523,9 +437,9 @@ class Model_train(object):
         seen_anchors = all_anchors[seen_idx.tolist(),:]
         unseen_anchors = all_anchors[unseen_idx.tolist(),:]       
         seen_count = 0
-        seen_all = 1
+        seen_all = 0
         unseen_count = 0
-        unseen_all = 1
+        unseen_all = 0
         all_count = 0
         min_thres = 10
         mean_dist = 0
@@ -557,8 +471,7 @@ class Model_train(object):
         dist_array = np.array(dist_list)
         idx = dist_array.shape[0] * (1.0 - n)
         thres  = np.sort(dist_array)[int(idx)]
-        
-        ipdb.set_trace()
+
       
         return thres 
               

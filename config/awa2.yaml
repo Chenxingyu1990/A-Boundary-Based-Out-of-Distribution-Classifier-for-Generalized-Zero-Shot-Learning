@@ -1,7 +1,6 @@
 dataset:
     dataset_name: AWA2
     GZSL: True
-    n_neighbors: 20
     data_path: /data/xingyu/Wasserstein_Autoencoders/data/AWA2
     save_path: /data/xingyu/gzsl_svae/experiments/AWA2_cls1.0
     
@@ -13,10 +12,7 @@ model:
     hidden_size: 64
     classes: 150
 train:
-    start_epoch_classifier: 280
     epoch: 1000
-    generate_n_samples: 50
-    classifier_epoch: 200
     learning_rate: 1e-4
     batch_size: 128
     check_point: 0

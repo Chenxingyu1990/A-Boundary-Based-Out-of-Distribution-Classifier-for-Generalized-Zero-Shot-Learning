@@ -70,7 +70,6 @@ class Model_train(object):
         self.all_attrs = all_attrs
         self.lr = lr
         self.epoch = epoch
-        self.SIGMA = SIGMA
         self.save_path = save_path
         self.save_every = save_every
         self.ifsample = ifsample

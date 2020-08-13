@@ -120,7 +120,6 @@ if __name__ == "__main__":
                                   dataset_loader_test_unseen,
                                   dataset_loader_test_seen,
                                   criterion = nn.L1Loss(),
-                                  SIGMA = 0.5,
                                   lr = 1e-4,
                                   all_attrs = data.attrs,
                                   epoch = train_config['epoch'],

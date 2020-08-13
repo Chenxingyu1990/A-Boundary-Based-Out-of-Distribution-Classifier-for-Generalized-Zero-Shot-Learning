@@ -12,11 +12,9 @@ import mpl_toolkits.mplot3d.axes3d as p3
 from torch.optim.lr_scheduler import StepLR
 from torch.autograd import Variable
 from common import general
-#from utils import mmd_utils
 from sklearn.metrics import pairwise_distances
 from hyperspherical_vae.distributions import VonMisesFisher
 from hyperspherical_vae.distributions import HypersphericalUniform
-#from wae_models import classifier
 from math import factorial
 from utilis_svae import emd
 from svae_models import classifier
@@ -214,7 +212,7 @@ class Model_train(object):
                 cls_loss = self.crossEntropy_Loss(cls_out, label_input) 
                 
                 
-                '''no cross reconstruction'''
+                # Used for ablation experiments
                 '''
                 x_recon = self.decoder(z_x)
                 recon_loss = self.criterion(x_recon, input_data)

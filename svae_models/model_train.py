@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 from torch.optim.lr_scheduler import StepLR
 from torch.autograd import Variable
-from common import general
+#from common import general
 from sklearn.metrics import pairwise_distances
 from hyperspherical_vae.distributions import VonMisesFisher
 from hyperspherical_vae.distributions import HypersphericalUniform
@@ -79,7 +79,7 @@ class Model_train(object):
         
         if iftest:
             log_dir = '{}/log'.format(self.save_path)
-            general.logger_setup(log_dir, 'results__')
+            #general.logger_setup(log_dir, 'results__')
         
         
     def save_checkpoint(self,state, filename = 'checkpoint.pth.tar'):
@@ -121,7 +121,7 @@ class Model_train(object):
       
     def training(self, checkpoint = -1):
         log_dir = '{}/log'.format(self.save_path)
-        general.logger_setup(log_dir)
+        #general.logger_setup(log_dir)
     
         if checkpoint > 0:
             file_encoder = 'Checkpoint_{}_Enc.pth.tar'.format(checkpoint)
@@ -249,7 +249,7 @@ class Model_train(object):
                 step += 1
             
                 if (step + 1) % 50 == 0:
-                    logging.info("Epoch: [%d/%d], Step: [%d/%d], Reconstruction Loss: %.4f KL_Loss: %.4f, attr_Recon Loss: %.4f, cls_Loss: %.4f, k1: %.4f, k2: %.4f, u: %.4f" %
+                    print("Epoch: [%d/%d], Step: [%d/%d], Reconstruction Loss: %.4f KL_Loss: %.4f, attr_Recon Loss: %.4f, cls_Loss: %.4f, k1: %.4f, k2: %.4f, u: %.4f" %
                           (epoch, self.epoch, step , len(self.train_loader), recon_loss.data.item(), KL_loss.data.item(), attr_loss.data.item(), cls_loss.data.item(), s1.mean().data.item(), s2.mean().data.item(), torch.dot(z_x[1,:], z_attr.squeeze()[1,:]).data.item()))
    
             if epoch % self.save_every ==0: 

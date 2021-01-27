@@ -246,7 +246,7 @@ class Model_train(object):
             
                 KL_loss = dist.mean()
                
-                total_loss =  recon_loss *1.0 + KL_loss * 0.1  + attr_loss *1.0 #+ cls_loss* 1.0  
+                total_loss =  recon_loss *1.0 + KL_loss * 0.1  + attr_loss *1.0 + cls_loss* 1.0  
             
                 total_loss.backward()
             

@@ -14,7 +14,7 @@ This library contains a Pytorch implementation of 'A Boundary Based Out-of-Distr
 
 ## Installation
 
-1. Add this project to you python path.
+1. Add this project to your python path.
 
 2. To install, run
 
